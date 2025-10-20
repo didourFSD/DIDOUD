@@ -1,0 +1,41 @@
+name: Persistent RDP
+
+on:
+  workflow_dispatch:   # لتشغيله يدويًا من GitHub Actions
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 360  # 6 ساعات
+
+    steps:
+      # الخطوة 1: استرجاع البيانات المحفوظة من آخر مرة
+      - name: Restore previous data
+        uses: actions/download-artifact@v4
+        with:
+          name: my-backup
+          path: C:\Backup
+        continue-on-error: true  # إذا لم يوجد backup يتخطاها
+
+      # الخطوة 2: تشغيل RDP
+      - name: Setup RDP
+        run: |
+          echo "إعداد RDP..."
+          # هنا ضع أوامر إعداد RDP الخاصة بك مثل:
+          # powershell -Command "Invoke-WebRequest ..."
+          # أو الأوامر الموجودة في مشروعك
+          # يمكنك حفظ الملفات في C:\Backup ليتم الاحتفاظ بها لاحقًا
+
+      # الخطوة 3: الانتظار حتى تنتهي الجلسة (يمكنك تغيير الوقت)
+      - name: Keep session alive
+        run: |
+          echo "RDP قيد التشغيل. انتظر..."
+          timeout /t 21600  # 6 ساعات
+
+      # الخطوة 4: حفظ بياناتك عند الإيقاف (كـ artifact)
+      - name: Save data for next session
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-backup
+          path: C:\Backup
